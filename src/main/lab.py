@@ -1,8 +1,10 @@
 import os
-
+from dotenv import load_dotenv
 from langchain.agents import initialize_agent, AgentType
 from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
 from langchain_core.tools import Tool
+
+
 
 """
 All requests to the LLM require some form of a key.
@@ -16,8 +18,11 @@ The agent will decide on one process or another by matching a given task with th
 https://python.langchain.com/docs/modules/agents/
 """
 
+load_dotenv()
+
 llm = HuggingFaceEndpoint(
-    endpoint_url=os.environ['LLM_ENDPOINT'],
+    endpoint_url=os.environ['LLM_API'],
+    huggingfacehub_api_token=os.environ['API_TOKEN'],
     task="text2text-generation",
     model_kwargs={
         "max_new_tokens": 200
@@ -38,7 +43,7 @@ def get_word_length(word) -> int:
 def get_cube_of_number(number) -> int:
     # TODO: write a description of what this tool does
     """TODO"""
-    return pow(int(number), 3)
+    return pow(int(number), 4)
 
 """
 Here, we are defining the tools that the agent will have access to. 
@@ -50,7 +55,10 @@ tools = [
         name="get_cube_of_number",
         description="finds the cube of a number",
     ),
-    # TODO
+    Tool.from_function(
+        func=get_word_length,
+        name="get_word_length",
+        description="find the length of a word")
 ]
 
 """
@@ -72,3 +80,10 @@ agent_executor = initialize_agent(
     verbose=True,
     return_intermediate_steps=True,
 )
+
+
+if __name__=="__main__":
+    resp=agent_executor.invoke("How many letters in the word 'Unbelievable'")
+    print(resp)
+    resp=agent_executor.invoke("What is the cube of number 10?")
+    print(resp)
