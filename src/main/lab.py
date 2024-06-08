@@ -2,7 +2,12 @@ import os
 from dotenv import load_dotenv
 from langchain.agents import initialize_agent, AgentType
 from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
+from langchain_community.chat_models import ChatHuggingFace
 from langchain_core.tools import Tool
+from huggingface_hub import login
+
+from huggingface_hub import list_inference_endpoints
+
 
 
 
@@ -20,6 +25,15 @@ https://python.langchain.com/docs/modules/agents/
 
 load_dotenv()
 
+
+login(token=os.environ['API_TOKEN'])
+
+available_endpoints = list_inference_endpoints("*")
+print(available_endpoints)
+for endp in available_endpoints:
+    print(endp)
+
+
 llm = HuggingFaceEndpoint(
     endpoint_url=os.environ['LLM_API'],
     huggingfacehub_api_token=os.environ['API_TOKEN'],
@@ -29,6 +43,9 @@ llm = HuggingFaceEndpoint(
     }
 )
 
+
+
+#chat_model=ChatHuggingFace(llm=llm)
 """
 The two functions below will serve as tools for the agent. 
 In other words, they are processes that the agent can choose from to complete a given task.
@@ -83,7 +100,8 @@ agent_executor = initialize_agent(
 
 
 if __name__=="__main__":
-    resp=agent_executor.invoke("How many letters in the word 'Unbelievable'")
-    print(resp)
-    resp=agent_executor.invoke("What is the cube of number 10?")
-    print(resp)
+    #resp=agent_executor.invoke("Use tool get_word_length. How many letters in the word 'Unbelievable'")
+    res=llm.invoke("Who is Narendra Modi?")
+    print(res)
+#   resp=agent_executor.invoke("What is the cube of number 10?")
+#    print(resp)
